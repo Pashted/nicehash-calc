@@ -10,9 +10,9 @@
 $curl = curl_init();
 curl_setopt_array($curl, array(
     CURLOPT_SSL_VERIFYPEER => 0,
-    CURLOPT_HEADER => 0,
+    CURLOPT_HEADER         => 0,
     CURLOPT_RETURNTRANSFER => 1,
-    CURLOPT_URL => "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,USD,ETH,ZEC,SNT,CRC**,SUMO,TZC,ETP,RYO,BTG,XMR,ZEN,HUSH,XRP&tsyms=USD,RUB,BTC",
+    CURLOPT_URL            => "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,USD,ETH,ZEC,SNT,CRC**,SUMO,TZC,ETP,RYO,BTG,XMR,ZEN,HUSH,XRP,INN&tsyms=USD,RUB,BTC",
 ));
 $cc = json_decode(curl_exec($curl));
 curl_close($curl);
@@ -20,11 +20,11 @@ curl_close($curl);
 $curl = curl_init();
 curl_setopt_array($curl, array(
     CURLOPT_SSL_VERIFYPEER => 0,
-    CURLOPT_POST => 1,
-    CURLOPT_HEADER => 0,
+    CURLOPT_POST           => 1,
+    CURLOPT_HEADER         => 0,
     CURLOPT_RETURNTRANSFER => 1,
-    CURLOPT_URL => "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
-    CURLOPT_POSTFIELDS => null
+    CURLOPT_URL            => "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    CURLOPT_POSTFIELDS     => null
 ));
 $xml = curl_exec($curl);
 curl_close($curl);
@@ -40,51 +40,54 @@ $rub = (float)$rub['@attributes']['rate']; // стоимость евро в р�
 
 $result = [
     "usd" => [
-        'name' => "RUB-USD",
+        'name'  => "RUB-USD",
         'price' => $rub / $usd
     ],
     "btc" => [
-        'name' => "USD-BTC",
+        'name'  => "USD-BTC",
         'price' => $cc->BTC->USD
     ]
 ];
 
-$need = [
-//    22, // cryptonight
-    30, // cryptonightv7
+$need = array(
+    42, // cryptonightR
     20, // daggerhashimoto
     24, // equihash
-    14, // lyra2rev2
+    36, // zhash
     8, // neoscrypt
-//    7, // nist5
     33, // x16r
-//    5 // keccak
-    32 // keccak
-];
+    37, // beam
+    41, // mtp
+    38, // grincuckaroo29
+    40, // lyra2rev3
+    32, // lyra2z
+    5, // keccak
+    //    30, // cryptonight
+    //    14, // lyra2rev2
+    //    7, // nist5
+);
 
 $curl = curl_init();
 curl_setopt_array($curl, array(
     CURLOPT_SSL_VERIFYPEER => 0,
-    CURLOPT_POST => 1,
-    CURLOPT_HEADER => 0,
+    CURLOPT_POST           => 1,
+    CURLOPT_HEADER         => 0,
     CURLOPT_RETURNTRANSFER => 1,
-    CURLOPT_URL => "https://api.nicehash.com/api?method=simplemultialgo.info",
-    CURLOPT_POSTFIELDS => null
+    CURLOPT_URL            => "https://api.nicehash.com/api?method=simplemultialgo.info",
+    CURLOPT_POSTFIELDS     => null
 ));
 $algo = json_decode(curl_exec($curl));
 curl_close($curl);
 
-
 foreach ($need as $i) {
-    $result[$i] = [
-        'price' => 0
-    ];
+    $result[$i] = ['price' => 0];
 
-    $algo->result->simplemultialgo[$i]->paying /= $i == 24 || $i == 30 ? 1000000000 : 1000;
+    $algo->result->simplemultialgo[$i]->paying /= $i == 24 || $i == 30 || $i == 36 || $i == 37 || $i == 38 || $i == 42 ? 1000000000 : 1000;
+
 
     $result[$algo->result->simplemultialgo[$i]->algo] = [
-//        'name'  => str_replace("hashimoto", "+pascal", $algo->result->simplemultialgo[$i]->name),
-        'name' => $algo->result->simplemultialgo[$i]->name,
+        'name'  => $algo->result->simplemultialgo[$i]->name,
+        //        'name'  => str_replace("hashimoto", "+pascal", $algo->result->simplemultialgo[$i]->name),
         'price' => $algo->result->simplemultialgo[$i]->paying
     ];
 }
@@ -102,57 +105,61 @@ foreach ($need as $i) {
 foreach ($need as $n) {
     $result[$n]['price'] = number_format($result[$n]['price'], 10);
 }
-$result['eth'] = [
-    'name' => "ETH-BTC",
+$result['eth']  = [
+    'name'  => "ETH-BTC",
     'price' => $cc->ETH->BTC
 ];
-$result['zec'] = [
-    'name' => "ZEC-BTC",
+$result['zec']  = [
+    'name'  => "ZEC-BTC",
     'price' => $cc->ZEC->BTC
 ];
-$result['snt'] = [
-    'name' => "SNT-USD",
-    'price' => $cc->SNT->USD
+$result['snt']  = [
+    'name'  => "SNT-BTC",
+    'price' => $cc->SNT->BTC
 ];
-$result['tzc'] = [
-    'name' => "TZC-USD",
-    'price' => $cc->TZC->USD
+$result['tzc']  = [
+    'name'  => "TZC-BTC",
+    'price' => $cc->TZC->BTC
 ];
 $result['sumo'] = [
-    'name' => "SUMO-USD",
-    'price' => $cc->SUMO->USD
+    'name'  => "SUMO-BTC",
+    'price' => $cc->SUMO->BTC
 ];
-$result['ryo'] = [
-    'name' => "RYO-USD",
-    'price' => $cc->RYO->USD
+$result['ryo']  = [
+    'name'  => "RYO-BTC",
+    'price' => $cc->RYO->BTC
 ];
-$result['crc'] = [
-    'name' => "CRC-USD",
-    'price' => $cc->{'CRC**'}->USD
+$result['crc']  = [
+    'name'  => "CRC-BTC",
+    'price' => $cc->{'CRC**'}->BTC
 ];
-$result['etp'] = [
-    'name' => "ETP-USD",
-    'price' => $cc->ETP->USD
+$result['etp']  = [
+    'name'  => "ETP-USD",
+    'price' => $cc->ETP->BTC
 ];
-$result['btg'] = [
-    'name' => "BTG-USD",
-    'price' => $cc->BTG->USD
+$result['btg']  = [
+    'name'  => "BTG-BTC",
+    'price' => $cc->BTG->BTC
 ];
-$result['xmr'] = [
-    'name' => "XMR-USD",
-    'price' => $cc->XMR->USD
+$result['xmr']  = [
+    'name'  => "XMR-BTC",
+    'price' => $cc->XMR->BTC
 ];
-$result['zen'] = [
-    'name' => "ZEN-USD",
-    'price' => $cc->ZEN->USD
+$result['zen']  = [
+    'name'  => "ZEN-BTC",
+    'price' => $cc->ZEN->BTC
 ];
 $result['hush'] = [
-    'name' => "HUSH-USD",
-    'price' => $cc->HUSH->USD
+    'name'  => "HUSH-BTC",
+    'price' => $cc->HUSH->BTC
 ];
-$result['xrp'] = [
-    'name' => "XRP-USD",
-    'price' => $cc->XRP->USD
+$result['xrp']  = [
+    'name'  => "XRP-BTC",
+    'price' => $cc->XRP->BTC
+];
+$result['inn']  = [
+    'name'  => "INN-BTC",
+    'price' => $cc->INN->BTC
 ];
 ?>
 
@@ -187,7 +194,7 @@ $result['xrp'] = [
         <tr>
             <?php // echo "<td>" . $item['name'] . "</td>"; ?>
             <td title="<?php echo $item['name']; ?>"
-                class="<?php echo $item['name']; ?>"><?php echo str_replace(".", ",", $item['price']); ?></td>
+                class="<?php echo $item['name']; ?>"><?php echo str_replace(",", ".", $item['price']); ?></td>
         </tr>
     <? } ?>
 </table>
